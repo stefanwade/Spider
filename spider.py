@@ -1,5 +1,13 @@
+#!usr/bin/env python
 # -*- coding:utf-8 -*-
- 
+#Filename: spider.py
+
+'''
+------------------------------------------
+Author: dengxin
+Version: 2016-9-21
+------------------------------------------
+'''
 import urllib
 import urllib2
 import re
@@ -11,8 +19,8 @@ class Spider:
  
     #页面初始化
     def __init__(self):
-        #self.siteURL = 'http://mm.taobao.com/json/request_top_list.htm'
-        self.siteURL = 'https://mm.taobao.com/search_tstar_model.htm'
+        self.siteURL = 'http://mm.taobao.com/json/request_top_list.htm'
+        #self.siteURL = 'https://mm.taobao.com/search_tstar_model.htm'
         self.tool = tool.Tool()
  
     #获取索引页面的内容
@@ -30,17 +38,31 @@ class Spider:
         contents = []
         for item in items:
             contents.append([item[0],item[1],item[2],item[3],item[4]])
+            #item[0]个人详情URL,item[1]头像URL,item[2]姓名,item[3]年龄,item[4]居住地
+            print u'个人详情URL:'+item[0]
+            print u'头像URL:'+item[1]
+            print u'姓名:'+item[2]
+            print u'年龄:'+item[3]
+            print u'居住地:'+item[4]
+            print 
+            print 
         return contents
  
     #获取MM个人详情页面
     def getDetailPage(self,infoURL):
-        response = urllib2.urlopen(infoURL)
+        #https://mm.taobao.com/687471686.htm?smToken=f2e948a8026b495f9f8cc3930d1077dc&smSign=vSji5DsZy%2BxNOyk1VmM91g%3D%3D
+        values = {'smToken':'stefan_wade', 'smSign':'aszx312666'}
+        data = urllib.urlencode(values)
+        request = urllib2.Request(infoURL,data,timeout=20)
+        response = urllib2.urlopen(request)
         return response.read().decode('gbk')
  
     #获取个人文字简介
     def getBrief(self,page):
         pattern = re.compile('<div class="mm-aixiu-content".*?>(.*?)<!--',re.S)
         result = re.search(pattern,page)
+        #print page
+        print result      ##################要登录
         return self.tool.replace(result.group(1))
  
     #获取页面所有图片
@@ -51,6 +73,7 @@ class Spider:
         #从代码中提取图片
         patternImg = re.compile('<img.*?src="(.*?)"',re.S)
         images = re.findall(patternImg,content.group(1))
+        print images
         return images
  
  
@@ -117,10 +140,11 @@ class Spider:
         for item in contents:
             #item[0]个人详情URL,item[1]头像URL,item[2]姓名,item[3]年龄,item[4]居住地
             print u"发现一位模特,名字叫",item[2],u"芳龄",item[3],u",她在",item[4]
-            print u"正在偷偷地保存",item[2],"的信息"
+            print u"正在偷偷地保存",item[2],u"的信息"
             print u"又意外地发现她的个人地址是",item[0]
             #个人详情页面的URL
-            detailURL = item[0]
+            detailURL = 'http:'+item[0]
+            print detailURL
             #得到个人详情页面代码
             detailPage = self.getDetailPage(detailURL)
             #获取个人简介
@@ -144,4 +168,4 @@ class Spider:
  
 #传入起止页码即可，在此传入了2,10,表示抓取第2到10页的MM
 spider = Spider()
-spider.savePagesInfo(2,100)
+spider.savePagesInfo(1,100)
